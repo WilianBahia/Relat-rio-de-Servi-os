@@ -8,7 +8,7 @@
 // NUNCA coloque aqui a chave "service_role".
 
 window.RELATORIO_CONFIG = {
-  SUPABASE_URL: "https://bmbrhudnaqaxvwwqytyr.supabase.co/rest/v1/",
+  SUPABASE_URL: "https://bmbrhudnaqaxvwwqytyr.supabase.co",
   SUPABASE_ANON_KEY: "sb_publishable_Q7kPOFYMsNuovU-mE7jj8A_zPR9NqEr",
 
   // Textos do relatório
