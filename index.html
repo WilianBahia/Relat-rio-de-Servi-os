@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0A1F44">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Relatório Prime">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Relatório de Serviços | Prime Soluções Ambientais</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -33,7 +40,7 @@ button{cursor:pointer}
 .topo .ttl{font:400 17px/1.2 var(--disp);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .topo .ttl small{display:block;font:400 12px var(--sans);color:#C9D3E6}
 .topo .sair{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:8px;padding:7px 12px;font-size:14px}
-.abas{display:flex;gap:4px;background:var(--navy);padding:0 12px;position:sticky;top:60px;z-index:19}
+.abas{display:flex;gap:4px;background:var(--navy);padding:0 12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 60px);z-index:19}
 .aba{background:transparent;border:0;color:#C9D3E6;padding:10px 14px 12px;font-weight:700;font-size:15px;border-bottom:3px solid transparent}
 .aba[aria-selected="true"]{color:#fff;border-bottom-color:var(--lime)}
 .demo{background:var(--lime);color:var(--navy);text-align:center;font-size:13px;font-weight:700;padding:6px 12px}
@@ -895,6 +902,7 @@ document.addEventListener('click', async e => {
   }
 });
 
+if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
 iniciar();
 </script>
 </body>
