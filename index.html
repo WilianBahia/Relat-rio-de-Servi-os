@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1F44">
+<title>Relatório de Serviços | Prime Soluções Ambientais</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Questrial&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<style>
+:root{
+  --navy:#0A1F44; --lime:#C5E63C; --green:#4AAF48; --blue:#2A3C8D;
+  --bg:#F3F5F9; --panel:#FFFFFF; --ink:#0A1F44; --muted:#56657F; --line:#D9DFEA; --soft:#EEF2F8;
+  --ok:#2F7D32; --ok-soft:#E4F4E1; --warn:#9A5B00; --warn-soft:#FFF1D6; --err:#B3261E; --err-soft:#FCE8E6;
+  --sans:"Lato","Helvetica Neue",Arial,sans-serif; --disp:"Questrial","Helvetica Neue",Arial,sans-serif;
+  box-sizing:border-box;
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--lime);outline-offset:2px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ---------- topo ---------- */
+.topo{background:var(--navy);color:#fff;padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:20}
+.topo img{height:40px;width:auto;display:block}
+.topo .sep{width:1px;height:28px;background:rgba(255,255,255,.35)}
+.topo .ttl{font:400 17px/1.2 var(--disp);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.topo .ttl small{display:block;font:400 12px var(--sans);color:#C9D3E6}
+.topo .sair{background:transparent;border:1px solid rgba(255,255,255,.45);color:#fff;border-radius:8px;padding:7px 12px;font-size:14px}
+.abas{display:flex;gap:4px;background:var(--navy);padding:0 12px;position:sticky;top:60px;z-index:19}
+.aba{background:transparent;border:0;color:#C9D3E6;padding:10px 14px 12px;font-weight:700;font-size:15px;border-bottom:3px solid transparent}
+.aba[aria-selected="true"]{color:#fff;border-bottom-color:var(--lime)}
+.demo{background:var(--lime);color:var(--navy);text-align:center;font-size:13px;font-weight:700;padding:6px 12px}
+
+/* ---------- geral ---------- */
+main{padding:20px 16px calc(env(safe-area-inset-bottom,0px) + 40px)}
+.wrap{max-width:560px;margin:0 auto}
+.wrap.wide{max-width:1180px}
+h1.h{font:400 28px/1.15 var(--disp);margin:4px 0 4px}
+.lead{color:var(--muted);margin:0 0 18px;font-size:15px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:10px;background:var(--navy);color:#fff;font-weight:700;padding:12px 18px;min-height:48px;font-size:16px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.full{width:100%}
+.btn.sec{background:#fff;color:var(--navy);border:1.5px solid var(--navy)}
+.btn.ghost{background:transparent;color:var(--navy);border:1px solid var(--line)}
+.btn.lime{background:var(--lime);color:var(--navy)}
+.btn.perigo{background:#fff;color:var(--err);border:1.5px solid var(--err)}
+.btn.sm{min-height:38px;padding:7px 12px;font-size:14px;border-radius:8px}
+.campo{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.campo label:not(.btn),.rot{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.3px}
+.campo input,.campo select,.campo textarea{width:100%;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:12px 13px;font-size:17px;min-height:50px}
+.campo input:focus,.campo select:focus,.campo textarea:focus{border-color:var(--navy);outline:none;box-shadow:0 0 0 3px rgba(197,230,60,.6)}
+.campo .dica{font-size:13px;color:var(--muted)}
+.campo .dica.alerta{color:var(--warn)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.msg{border-radius:10px;padding:11px 14px;font-size:15px;margin-bottom:14px}
+.msg.err{background:var(--err-soft);color:var(--err)}
+.msg.ok{background:var(--ok-soft);color:var(--ok)}
+.msg.warn{background:var(--warn-soft);color:var(--warn)}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 20px);transform:translateX(-50%);background:var(--navy);color:#fff;padding:12px 18px;border-radius:12px;font-weight:700;z-index:60;box-shadow:0 8px 24px rgba(10,31,68,.3);max-width:calc(100% - 32px)}
+.toast::before{content:"";display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--lime);margin-right:10px;vertical-align:middle}
+
+/* ---------- login / setup ---------- */
+.entrada{min-height:100vh;display:flex;flex-direction:column}
+.entrada .faixa{background:var(--navy);padding:calc(env(safe-area-inset-top,0px) + 44px) 24px 40px;display:flex;flex-direction:column;align-items:center;gap:12px;border-bottom:5px solid var(--lime)}
+.entrada .faixa img{width:190px;height:auto}
+.entrada .corpo{flex:1;padding:28px 20px;display:flex;justify-content:center}
+.entrada .corpo > div{width:100%;max-width:400px}
+.passos{padding-left:20px;margin:8px 0 18px;color:var(--muted)}
+.passos li{margin-bottom:6px}
+code{background:var(--soft);padding:1px 6px;border-radius:5px;font-size:.92em}
+
+/* ---------- foto (coleta) ---------- */
+.foto-box{border:2px dashed #9FB0CC;border-radius:12px;background:var(--soft);aspect-ratio:654/286;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);overflow:hidden;position:relative}
+.foto-box img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.foto-box.tem{border-style:solid;border-color:var(--navy)}
+.foto-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.foto-btns label{position:relative}
+.foto-btns input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+.foto-btns label:focus-within{outline:3px solid var(--lime);outline-offset:2px;border-radius:10px}
+
+/* ---------- listas ---------- */
+.lista{display:flex;flex-direction:column;gap:10px}
+.item{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px}
+.item img,.item .ph{width:92px;height:40px;border-radius:6px;object-fit:cover;background:var(--soft);flex:none}
+.item .tx{flex:1;min-width:0}
+.item .tx b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .tx span{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}
+.tag.pend{background:var(--warn-soft);color:var(--warn)}
+.vazio{color:var(--muted);text-align:center;padding:28px 12px;border:1px dashed var(--line);border-radius:12px;background:#fff}
+
+/* ---------- conferência ---------- */
+.barra{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;margin-bottom:16px}
+.barra .campo{margin:0}
+.barra .campo input{min-height:44px;font-size:16px;padding:8px 12px}
+.resumo{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;min-width:130px}
+.kpi b{display:block;font:400 26px/1.1 var(--disp)}
+.kpi span{font-size:13px;color:var(--muted)}
+.filtros{display:flex;gap:6px;flex-wrap:wrap}
+.filtro{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 14px;font-size:14px;font-weight:700;color:var(--muted)}
+.filtro[aria-pressed="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.grade{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.reg{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.reg.conf{border-color:#9CCB98}
+.reg .ft{aspect-ratio:654/286;background:var(--soft);position:relative;overflow:hidden}
+.reg .ft img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.reg .ft .n{position:absolute;left:10px;top:10px;background:var(--blue);color:#fff;border-radius:6px;padding:3px 9px;font:400 18px var(--disp)}
+.reg .bd{padding:12px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.reg .bd h3{margin:0;font:400 18px/1.2 var(--disp);color:var(--blue)}
+.reg .meta{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px;font-size:14px}
+.reg .meta > div > span:first-child{color:var(--muted);font-size:12px;font-weight:700;display:block}
+.reg .meta .tag{display:inline-block}
+.reg .ac{display:flex;gap:8px;padding:0 14px 14px}
+.reg .ac .btn{flex:1}
+.chk{display:flex;align-items:center;gap:8px;font-weight:700}
+.chk input{width:20px;height:20px;accent-color:var(--navy)}
+
+/* ---------- tipo LF/SE ---------- */
+.tipo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tipo label{position:relative;display:block;cursor:pointer}
+.tipo input{position:absolute;opacity:0;width:1px;height:1px}
+.tipo span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:64px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--navy)}
+.tipo b{font:400 24px/1 var(--disp)}
+.tipo small{font-size:13px;color:var(--muted)}
+.tipo input:checked + span{background:var(--navy);border-color:var(--navy);color:#fff}
+.tipo input:checked + span small{color:#C9D3E6}
+.tipo input:focus-visible + span{outline:3px solid var(--lime);outline-offset:2px}
+.campo select{appearance:auto}
+
+/* ---------- seletor de área ---------- */
+.picker{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:10px;padding:10px 13px;min-height:56px;font-size:17px;color:var(--ink)}
+.picker .ph{color:#7A879C}
+.picker .val{flex:1;min-width:0;display:flex;flex-direction:column}
+.picker .val b{font:400 15px var(--disp);color:var(--blue)}
+.picker .val span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.picker svg{flex:none;color:var(--muted)}
+.picker.erro{border-color:var(--err)}
+dialog.sheet{width:100%;max-width:100%;height:88vh;max-height:100%;margin:auto 0 0;border-radius:18px 18px 0 0;display:none;flex-direction:column}
+dialog.sheet[open]{display:flex}
+@media (min-width:700px){ dialog.sheet{width:560px;height:min(80vh,760px);margin:auto;border-radius:16px} }
+.sheet .busca{padding:12px 16px 8px;display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line)}
+.sheet .busca input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 13px;font-size:17px;min-height:48px}
+.sheet .busca input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(197,230,60,.6)}
+.sheet .lista-a{flex:1;overflow:auto;padding:4px 8px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.sheet .grupo{font:700 12px var(--sans);letter-spacing:1.2px;color:var(--muted);padding:14px 10px 6px;text-transform:uppercase;position:sticky;top:0;background:#fff}
+.opt-area{width:100%;display:flex;gap:12px;align-items:center;text-align:left;border:0;background:transparent;border-radius:10px;padding:11px 10px;min-height:52px;font-size:16px;color:var(--ink)}
+.opt-area:hover{background:var(--soft)}
+.opt-area[aria-selected="true"]{background:var(--ok-soft)}
+.opt-area b{width:58px;flex:none;font:400 16px var(--disp);color:var(--blue)}
+.sheet .nada{padding:24px 10px;color:var(--muted);text-align:center}
+
+.campo select.status{font-size:18px;font-weight:700;color:var(--navy);min-height:56px}
+.campo select.status:invalid{font-weight:400;color:#7A879C}
+.campo select.erro{border-color:var(--err)}
+.pct{display:inline-flex;align-items:center;gap:6px;font-weight:700}
+.pct i{display:inline-block;width:46px;height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden}
+.pct i b{position:absolute;left:0;top:0;bottom:0;background:var(--green)}
+.rs-pct{display:flex;flex-direction:column;gap:5px}
+.rs-pct em{display:block;height:6px;background:#e3eee2;position:relative}
+.rs-pct em b{position:absolute;left:0;top:0;bottom:0;background:#4aaf48}
+
+.rs-nome{display:flex;align-items:center;gap:10px;min-width:0}
+.rs-nome h2{flex:1;min-width:0}
+.rs-serv{flex:none;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#2f7d32;border:1.5px solid #4aaf48;border-radius:999px;padding:3px 10px;white-space:nowrap}
+
+/* ---------- cadastro de áreas ---------- */
+.cad-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px;align-items:start}
+.cad-cols h2{font:400 20px var(--disp);margin:0 0 10px}
+.cad{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;max-height:70vh;overflow:auto}
+.cad-row{display:flex;gap:10px;align-items:center}
+.cad-row .cod{width:64px;flex:none;font:400 16px var(--disp);color:var(--blue)}
+.cad-row input{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;font-size:15px;min-height:40px}
+.cad-row.sem-nome input{border-color:#E8B25B;background:var(--warn-soft)}
+.cad-row input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(197,230,60,.6)}
+
+/* ---------- modal ---------- */
+dialog{border:0;border-radius:16px;padding:0;width:min(560px,calc(100% - 24px));max-height:calc(100% - 24px)}
+dialog::backdrop{background:rgba(10,31,68,.55)}
+dialog .hd{background:var(--navy);color:#fff;padding:14px 18px;font:400 20px var(--disp);display:flex;justify-content:space-between;align-items:center}
+dialog .hd button{background:transparent;border:0;color:#fff;font-size:24px;line-height:1;width:40px;height:40px}
+dialog .cn{padding:18px}
+dialog .rodape{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;padding:0 18px 18px}
+
+/* ---------- relatório ---------- */
+.rel-barra{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;padding:12px 16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.rel-barra .campo{margin:0;flex-direction:row;align-items:center;gap:8px}
+.rel-barra .campo label{color:#C9D3E6}
+.rel-barra input[type=text]{min-height:40px;font-size:15px;padding:6px 10px;width:170px;border-radius:8px;border:0}
+.rel-barra .chk{color:#fff;font-size:14px}
+.rel-barra input[type=text],.rel-barra select{color:var(--navy);background:#fff}
+.rel-barra .esp{flex:1}
+.rel-barra .st{font-size:14px;color:#C9D3E6}
+.rel-dica{max-width:794px;margin:16px auto 0;font-size:14px;color:var(--muted);padding:0 8px}
+.paginas{padding:18px 0 60px;display:flex;flex-direction:column;align-items:center;gap:22px}
+
+.pg{position:relative;width:794px;height:1123px;overflow:hidden;background:#fff;font-family:var(--sans);color:#1d1d1b;box-shadow:0 4px 24px rgba(10,31,68,.15);flex:none;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pg .pgimg{position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover}
+.cp-logo{position:absolute;left:81px;top:97px;width:124px;height:61px;object-fit:contain}
+.cp-mes{position:absolute;right:79px;top:90px;font-size:13px;letter-spacing:1.2px;color:#4aaf48}
+.cp-tit{position:absolute;left:78px;top:188px;margin:0;font:400 60px/1 var(--disp);color:#6378b1;white-space:nowrap}
+.cp-sub{position:absolute;left:80px;top:278px;font-size:24px;color:#4aaf48}
+.cp-barra{position:absolute;left:737px;top:190px;width:57px;height:933px;background:#4aaf48}
+.cp-linha{position:absolute;left:0;top:500px;width:737px;height:4px;background:#4aaf48}
+.cp-foto{position:absolute;left:0;top:513px;width:737px;height:397px;object-fit:cover}
+.rs-head{position:absolute;left:80px;right:0;top:76px;display:flex;align-items:center;gap:16px}
+.rs-head span{font-size:14px;letter-spacing:1.4px;color:#4aaf48;white-space:nowrap}
+.rs-head i{flex:1;height:2px;background:#4aaf48}
+.rs-tit{position:absolute;left:78px;top:104px;margin:0;font:400 40px/1.1 var(--disp);color:#111}
+.rs-sub{position:absolute;left:80px;top:158px;font-size:15px;color:#5c5c5c}
+.rs-areas{position:absolute;left:80px;top:200px;width:654px;display:flex;flex-direction:column;gap:36px}
+.rs-area{height:400px;display:flex;flex-direction:column;gap:14px}
+.rs-top{display:flex;gap:16px;align-items:stretch;flex:none}
+.rs-badge{width:84px;height:84px;flex:none;background:#2a3c8d;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.rs-badge small{font-size:11px;letter-spacing:1.6px;font-weight:700}
+.rs-badge b{font:400 38px/1 var(--disp)}
+.rs-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:10px}
+.rs-info h2{margin:0;font:400 24px/1.15 var(--disp);color:#2a3c8d;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rs-campos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.rs-campos div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.rs-campos span{font-size:12px;letter-spacing:1px;color:#5c5c5c;font-weight:700}
+.rs-campos strong{font-size:16px;font-weight:400;color:#1d1d1b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rs-linha{height:2px;background:#4aaf48;flex:none}
+.rs-foto{flex:1;min-height:0;width:100%;object-fit:cover;display:block;background:#eef5ee}
+.rs-rod{position:absolute;left:80px;top:1066px;font-size:15px;color:#767676}
+.rs-num{position:absolute;left:690px;top:1069px;width:104px;height:21px;background:#4aaf48;color:#fff;font-size:14px;line-height:21px;padding-left:20px}
+.rs-bar{position:absolute;left:706px;top:1090px;width:88px;height:7px;background:#2a3c8d}
+
+@media (max-width:840px){ .paginas .pg{zoom:.46} .paginas{gap:12px} }
+@media (max-width:420px){ .duo{grid-template-columns:1fr} .topo .sep,.topo .ttl small{display:none} }
+
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff}
+  body > *:not(#v-rel){display:none!important}
+  #v-rel .rel-barra,#v-rel .rel-dica{display:none!important}
+  .paginas{padding:0;gap:0;display:block}
+  .pg{box-shadow:none;width:210mm;height:296.9mm;zoom:1!important;break-after:page;page-break-after:always;margin:0}
+  .pg:last-child{break-after:auto;page-break-after:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ CONFIGURAÇÃO PENDENTE ============ -->
+<section id="v-setup" class="entrada" hidden>
+  <div class="faixa"><img src="assets/prime-logo.png" alt="Prime Soluções Ambientais"></div>
+  <div class="corpo"><div>
+    <h1 class="h">Falta conectar o banco de dados</h1>
+    <p class="lead">A ferramenta está publicada, mas ainda não sabe onde guardar os registros. Siga o README do repositório:</p>
+    <ol class="passos">
+      <li>Crie um projeto gratuito no Supabase.</li>
+      <li>Rode o arquivo <code>supabase/setup.sql</code> no SQL Editor.</li>
+      <li>Cole a Project URL e a chave anon public no arquivo <code>config.js</code>.</li>
+    </ol>
+    <button class="btn full sec" data-act="demo">Ver a demonstração</button>
+  </div></div>
+</section>
+
+<!-- ============ LOGIN ============ -->
+<section id="v-login" class="entrada" hidden>
+  <div class="faixa"><img src="assets/prime-logo.png" alt="Prime Soluções Ambientais"></div>
+  <div class="corpo"><div>
+    <h1 class="h">Relatório de Serviços</h1>
+    <p class="lead" id="login-sub">Entre com o e-mail e a senha fornecidos pelo administrador.</p>
+    <div id="login-msg" class="msg err" role="alert" hidden></div>
+    <form id="f-login" novalidate>
+      <div class="campo"><label for="l-email">E-mail</label><input id="l-email" type="email" autocomplete="username" inputmode="email" required></div>
+      <div class="campo"><label for="l-senha">Senha</label><input id="l-senha" type="password" autocomplete="current-password" required></div>
+      <button class="btn full" type="submit" id="l-btn">Entrar</button>
+    </form>
+    <div id="demo-login" hidden>
+      <p class="lead" style="margin-top:18px">Modo demonstração: escolha um perfil para testar.</p>
+      <div class="duo"><button class="btn sec" data-act="demo-colab">Colaborador</button><button class="btn sec" data-act="demo-admin">Administrador</button></div>
+    </div>
+  </div></div>
+</section>
+
+<!-- ============ APP ============ -->
+<div id="v-app" hidden>
+  <div id="demo-aviso" class="demo" hidden>Modo demonstração: nada é salvo. Ao recarregar a página, os registros somem.</div>
+  <header class="topo">
+    <img src="assets/prime-logo.png" alt="Prime Soluções Ambientais">
+    <span class="sep" aria-hidden="true"></span>
+    <div class="ttl" id="topo-ttl">Relatório de Serviços<small id="topo-user"></small></div>
+    <button class="sair" data-act="sair">Sair</button>
+  </header>
+  <nav class="abas" role="tablist" id="abas" hidden>
+    <button class="aba" role="tab" data-tab="conf" aria-selected="true">Conferência</button>
+    <button class="aba" role="tab" data-tab="novo" aria-selected="false">Novo registro</button>
+    <button class="aba" role="tab" data-tab="areas" aria-selected="false">Áreas</button>
+  </nav>
+
+  <main>
+    <!-- Novo registro -->
+    <section id="t-novo" class="wrap">
+      <h1 class="h">Novo registro</h1>
+      <p class="lead">Preencha e envie logo após executar o serviço na área.</p>
+      <div id="novo-msg" class="msg" role="status" hidden></div>
+      <form id="f-novo" class="card" novalidate>
+        <div class="campo">
+          <span class="rot">Foto da área (horizontal)</span>
+          <div class="foto-box" id="foto-box">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            <span>Nenhuma foto ainda</span>
+          </div>
+          <div class="foto-btns">
+            <label class="btn"><span>Tirar foto</span><input type="file" accept="image/*" capture="environment" data-foto aria-label="Tirar foto com a câmera"></label>
+            <label class="btn sec"><span>Galeria</span><input type="file" accept="image/*" data-foto aria-label="Escolher foto da galeria"></label>
+          </div>
+          <span class="dica" id="foto-dica">Segure o celular deitado. O recorte acima mostra como a foto vai sair no relatório.</span>
+        </div>
+        <div class="duo">
+          <div class="campo"><label for="n-data">Data</label><input id="n-data" type="date" required></div>
+          <div class="campo"><label for="n-os">Nº da OS</label><input id="n-os" type="text" inputmode="numeric" autocomplete="off" required></div>
+        </div>
+        <div class="campo">
+          <span class="rot" id="rot-area">Área</span>
+          <button type="button" class="picker" id="n-area" data-act="abrir-areas" aria-haspopup="dialog" aria-labelledby="rot-area n-area">
+            <span class="val" id="n-area-val"><span class="ph">Toque para escolher a área</span></span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="campo">
+          <label for="n-serv">Tipo de serviço</label>
+          <select id="n-serv" class="status" required><option value="" disabled selected>Toque para escolher o serviço</option><option value="Capina química">Capina química</option><option value="Roçada mecanizada">Roçada mecanizada</option></select>
+        </div>
+        <div class="campo">
+          <label for="n-status">Status da área (% concluído)</label>
+          <select id="n-status" class="status" required><option value="" disabled selected>Toque para escolher o status</option><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option><option value="70">70%</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option></select>
+        </div>
+        <div class="campo">
+          <label for="n-autor">Seu nome</label>
+          <input id="n-autor" type="text" autocomplete="name" required>
+        </div>
+        <button class="btn full" type="submit" id="n-btn">Enviar registro</button>
+      </form>
+
+      <div id="meus" style="margin-top:28px">
+        <h2 class="h" style="font-size:22px">Meus envios do mês</h2>
+        <div class="lista" id="meus-lista"></div>
+      </div>
+    </section>
+
+    <!-- Conferência (admin) -->
+    <section id="t-conf" class="wrap wide" hidden>
+      <h1 class="h">Conferência do mês</h1>
+      <p class="lead">Revise os registros enviados pela equipe, corrija o que for preciso e gere o relatório em PDF.</p>
+      <div class="barra">
+        <div class="campo"><label for="c-mes">Mês</label><input id="c-mes" type="month"></div>
+        <div class="filtros" role="group" aria-label="Filtrar registros">
+          <button class="filtro" data-filtro="todos" aria-pressed="true">Todos</button>
+          <button class="filtro" data-filtro="pend" aria-pressed="false">Aguardando</button>
+          <button class="filtro" data-filtro="ok" aria-pressed="false">Conferidos</button>
+        </div>
+        <div class="filtros" role="group" aria-label="Filtrar por tipo">
+          <button class="filtro" data-tfiltro="todos" aria-pressed="true">LF e SE</button>
+          <button class="filtro" data-tfiltro="LF" aria-pressed="false">Só LF</button>
+          <button class="filtro" data-tfiltro="SE" aria-pressed="false">Só SE</button>
+        </div>
+        <span style="flex:1"></span>
+        <button class="btn sec sm" data-act="conf-todos">Marcar todos como conferidos</button>
+        <button class="btn lime" data-act="gerar">Gerar relatório</button>
+      </div>
+      <div class="resumo" id="c-resumo"></div>
+      <div id="c-msg" class="msg" role="status" hidden></div>
+      <div class="grade" id="c-grade"></div>
+    </section>
+    <!-- Cadastro de áreas (admin) -->
+    <section id="t-areas" class="wrap wide" hidden>
+      <h1 class="h">Cadastro de áreas</h1>
+      <p class="lead">Estes nomes aparecem sozinhos no formulário quando o colaborador escolhe o tipo e o número. Os campos destacados ainda estão sem nome. As alterações são salvas ao sair de cada campo.</p>
+      <div class="resumo" id="a-resumo"></div>
+      <div id="a-msg" class="msg" role="status" hidden></div>
+      <div class="cad-cols">
+        <div><h2>LF · Linhas férreas</h2><div class="cad" id="a-LF"></div></div>
+        <div><h2>SE · Subestações</h2><div class="cad" id="a-SE"></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ RELATÓRIO ============ -->
+<div id="v-rel" hidden>
+  <div class="rel-barra">
+    <button class="btn sec sm" data-act="rel-voltar">Voltar</button>
+    <div class="campo"><label for="r-mes">Mês na capa</label><input id="r-mes" type="text"></div>
+    <label class="chk"><input type="checkbox" id="r-conf" checked> Só registros conferidos</label>
+    <div class="campo"><label for="r-tipo">Incluir</label><select id="r-tipo" style="min-height:40px;border-radius:8px;border:0;padding:6px 8px;font-size:15px"><option value="todos">LF e SE</option><option value="LF">Só LF</option><option value="SE">Só SE</option></select></div>
+    <div class="campo"><label for="r-serv">Serviço</label><select id="r-serv" style="min-height:40px;border-radius:8px;border:0;padding:6px 8px;font-size:15px"><option value="todos">Todos</option><option value="Capina química">Capina química</option><option value="Roçada mecanizada">Roçada mecanizada</option></select></div>
+    <span class="esp"></span>
+    <span class="st" id="r-st" role="status"></span>
+    <button class="btn lime sm" data-act="rel-pdf" id="r-pdf" disabled>Salvar PDF</button>
+  </div>
+  <p class="rel-dica">Ao clicar em <b>Salvar PDF</b>, escolha o destino <b>Salvar como PDF</b>, papel A4, margens <b>Nenhuma</b> e deixe marcado <b>Gráficos de plano de fundo</b>.</p>
+  <div class="paginas" id="r-paginas"></div>
+</div>
+
+<!-- ============ EDITAR (admin) ============ -->
+<dialog id="dlg">
+  <div class="hd"><span>Editar registro</span><button data-act="dlg-fechar" aria-label="Fechar">×</button></div>
+  <form id="f-edit" class="cn" novalidate>
+    <div id="e-msg" class="msg err" role="alert" hidden></div>
+    <div class="foto-box tem" id="e-foto"></div>
+    <div class="foto-btns" style="grid-template-columns:1fr">
+      <label class="btn sec sm"><span>Trocar foto</span><input type="file" accept="image/*" id="e-arq" aria-label="Trocar foto"></label>
+    </div>
+    <div style="height:14px"></div>
+    <div class="duo">
+      <div class="campo"><label for="e-data">Data</label><input id="e-data" type="date" required></div>
+      <div class="campo"><label for="e-os">Nº da OS</label><input id="e-os" type="text" required></div>
+    </div>
+    <div class="campo"><label for="e-area">Área</label><select id="e-area"></select></div>
+    <div class="campo"><label for="e-serv">Tipo de serviço</label><select id="e-serv" class="status" required><option value="" disabled>Sem serviço</option><option value="Capina química">Capina química</option><option value="Roçada mecanizada">Roçada mecanizada</option></select></div>
+    <div class="campo"><label for="e-status">Status da área (% concluído)</label><select id="e-status" class="status" required><option value="" disabled>Sem status</option><option value="10">10%</option><option value="20">20%</option><option value="30">30%</option><option value="40">40%</option><option value="50">50%</option><option value="60">60%</option><option value="70">70%</option><option value="80">80%</option><option value="90">90%</option><option value="100">100%</option></select></div>
+    <label class="chk"><input type="checkbox" id="e-conf"> Registro conferido</label>
+  </form>
+  <div class="rodape">
+    <button class="btn perigo sm" data-act="dlg-excluir" id="e-excluir">Excluir registro</button>
+    <button class="btn sm" data-act="dlg-salvar" id="e-salvar">Salvar alterações</button>
+  </div>
+</dialog>
+
+<dialog id="dlg-area" class="sheet" aria-labelledby="dlg-area-t">
+  <div class="hd"><span id="dlg-area-t">Escolha a área</span><button type="button" data-act="fechar-areas" aria-label="Fechar">×</button></div>
+  <div class="busca">
+    <label class="sr" for="busca-area">Buscar área</label>
+    <input id="busca-area" type="search" placeholder="Buscar: LF 12, SE 3, Sul…" autocomplete="off">
+    <div class="filtros" role="group" aria-label="Tipo de área">
+      <button type="button" class="filtro" data-afiltro="todos" aria-pressed="true">Todas</button>
+      <button type="button" class="filtro" data-afiltro="LF" aria-pressed="false">Linhas (LF)</button>
+      <button type="button" class="filtro" data-afiltro="SE" aria-pressed="false">Subestações (SE)</button>
+    </div>
+  </div>
+  <div class="lista-a" id="lista-a" role="listbox" aria-label="Áreas"></div>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const CFG = window.RELATORIO_CONFIG || {};
+const TXT = { cliente: CFG.CLIENTE || 'CSN', servico: CFG.SERVICO || 'Saneamento Vegetal', empresa: CFG.EMPRESA || 'Prime Soluções Ambientais' };
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hoje = () => { const d = new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); };
+const mesDe = d => (d || hoje()).slice(0,7);
+const fmtData = s => s ? s.split('-').reverse().join('/') : '';
+function intervalo(mes){ const [y,m] = mes.split('-').map(Number); const f = new Date(y, m, 1); return [mes+'-01', f.getFullYear()+'-'+String(f.getMonth()+1).padStart(2,'0')+'-01']; }
+function nomeMes(mes){ const [y,m] = mes.split('-').map(Number); return new Date(y, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}) + ' de ' + y; }
+function capaMes(mes){ const [y,m] = mes.split('-').map(Number); return new Date(y, m-1, 1).toLocaleDateString('pt-BR', {month:'long'}).toUpperCase() + ' ' + y; }
+const QTD = { LF: 72, SE: 11 };
+const NOME_TIPO = { LF: 'Linha férrea', SE: 'Subestação' };
+const normNum = v => { v = String(v ?? '').trim(); return /^\d+$/.test(v) ? String(parseInt(v, 10)) : v.toUpperCase(); };
+const cod = r => (r.area_tipo || 'LF') + '-' + r.area_numero;
+const pctTxt = r => r.status_pct ? r.status_pct + '%' : '-';
+const pctHtml = r => r.status_pct ? '<span class="pct">' + r.status_pct + '% <i><b style="width:' + Number(r.status_pct) + '%"></b></i></span>' : '-';
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+let toastT;
+function toast(t){ const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(()=>{ el.hidden = true; }, 3200); }
+function msg(el, tipo, texto){ el.className = 'msg ' + tipo; el.textContent = texto; el.hidden = !texto; }
+
+/* Comprime a foto no celular antes de enviar (máx. 1920 px, JPEG) */
+async function comprimir(file){
+  let src;
+  try { src = await createImageBitmap(file, {imageOrientation:'from-image'}); }
+  catch(e){
+    src = await new Promise((res, rej)=>{ const i = new Image(); i.onload = ()=>res(i); i.onerror = ()=>rej(new Error('Não foi possível ler a imagem.')); i.src = URL.createObjectURL(file); });
+  }
+  const W = src.width || src.naturalWidth, H = src.height || src.naturalHeight;
+  const k = Math.min(1, 1920 / Math.max(W, H));
+  const c = document.createElement('canvas'); c.width = Math.round(W*k); c.height = Math.round(H*k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
+  if (!blob) throw new Error('Não foi possível processar a imagem.');
+  return { blob, w: c.width, h: c.height };
+}
+
+/* =====================================================================
+   Acesso aos dados: Supabase (real) ou demonstração (memória)
+   ===================================================================== */
+function criarApiSupabase(){
+  const sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY);
+  const cache = {};
+  const erro = (e, padrao) => { const m = e && e.message || ''; if (/Invalid login/i.test(m)) return new Error('E-mail ou senha incorretos.'); if (/Failed to fetch|NetworkError|network/i.test(m)) return new Error('Sem conexão com a internet. Tente de novo quando tiver sinal.'); return new Error(padrao + (m ? ' (' + m + ')' : '')); };
+  return {
+    demo: false,
+    async usuario(){ const { data } = await sb.auth.getSession(); return data.session ? data.session.user : null; },
+    async entrar(email, senha){ const { data, error } = await sb.auth.signInWithPassword({ email, password: senha }); if (error) throw erro(error, 'Não foi possível entrar.'); return data.user; },
+    async sair(){ await sb.auth.signOut(); },
+    async admin(){ const { data, error } = await sb.rpc('is_admin'); if (error) throw erro(error, 'Não foi possível verificar o perfil.'); return !!data; },
+    async areas(){ const { data, error } = await sb.from('areas').select('tipo,numero,nome'); if (error) throw erro(error, 'Não foi possível carregar as áreas.'); return data; },
+    async salvarArea(tipo, numero, nome){
+      const q = nome ? sb.from('areas').upsert({ tipo, numero, nome }, { onConflict: 'tipo,numero' }) : sb.from('areas').delete().eq('tipo', tipo).eq('numero', numero);
+      const { error } = await q; if (error) throw erro(error, 'Não foi possível salvar a área.');
+    },
+    async listar(mes){ const [a, b] = intervalo(mes); const { data, error } = await sb.from('registros').select('*').gte('data', a).lt('data', b).order('data').order('criado_em'); if (error) throw erro(error, 'Não foi possível carregar os registros.'); return data; },
+    async subirFoto(blob, dataServ){
+      const u = await this.usuario(); const path = u.id + '/' + mesDe(dataServ) + '/' + uuid() + '.jpg';
+      const { error } = await sb.storage.from('fotos').upload(path, blob, { contentType: 'image/jpeg', upsert: false });
+      if (error) throw erro(error, 'Não foi possível enviar a foto.');
+      return path;
+    },
+    async criar(dados, blob){
+      const path = await this.subirFoto(blob, dados.data);
+      const { data, error } = await sb.from('registros').insert({ ...dados, foto_path: path }).select().single();
+      if (error){ await sb.storage.from('fotos').remove([path]); throw erro(error, 'Não foi possível salvar o registro.'); }
+      return data;
+    },
+    async atualizar(id, patch){ const { data, error } = await sb.from('registros').update(patch).eq('id', id).select().single(); if (error) throw erro(error, 'Não foi possível salvar.'); return data; },
+    async trocarFoto(reg, blob){
+      const path = await this.subirFoto(blob, reg.data);
+      const novo = await this.atualizar(reg.id, { foto_path: path });
+      sb.storage.from('fotos').remove([reg.foto_path]).catch(()=>{});
+      return novo;
+    },
+    async excluir(reg){ const { error } = await sb.from('registros').delete().eq('id', reg.id); if (error) throw erro(error, 'Não foi possível excluir.'); sb.storage.from('fotos').remove([reg.foto_path]).catch(()=>{}); },
+    async urls(paths){
+      const agora = Date.now(), faltam = [...new Set(paths)].filter(p => p && !(cache[p] && cache[p].exp > agora));
+      if (faltam.length){
+        const { data, error } = await sb.storage.from('fotos').createSignedUrls(faltam, 3600);
+        if (!error && data) data.forEach(d => { if (d.signedUrl) cache[d.path] = { url: d.signedUrl, exp: agora + 3300e3 }; });
+      }
+      const out = {}; paths.forEach(p => { if (cache[p]) out[p] = cache[p].url; }); return out;
+    }
+  };
+}
+
+const AREAS_DEMO = [["LF", "1", "Pátio de carvão vagão carregado"], ["LF", "2", "Pátio de carvão vagão vazio"], ["LF", "3", "Oficina"], ["LF", "4", "Beira Rio"], ["LF", "5", "PPS"], ["LF", "6", "RA- Pátio de formação de tabela"], ["LF", "7", "Corredor Volta Grande - Santo Agostinho V. Americana"], ["LF", "8", "Linha 2 nova"], ["LF", "9", "Linha 9"], ["LF", "10", "Fábrica de cimentos até D-3"], ["LF", "11", "12 longo"], ["LF", "12", "Pátio do Volta Grande"], ["LF", "13", "Desvio da URA"], ["LF", "14", "12 morto"], ["LF", "15", "Pátio da gusa máquina moldar gusa"], ["LF", "16", "Pátio leste GIL e BC"], ["LF", "17", "Pátio de minério vagões vazios"], ["LF", "18", "Pátio de minério vagões carregados"], ["LF", "19", "Anexo"], ["LF", "20", "EE-06"], ["LF", "21", "Aços longos até o PMS"], ["LF", "22", "EE-08"], ["LF", "23", "Quebrador até o 3º desvio"], ["LF", "24", "Linha interna - calcinação fábrica de cal"], ["LF", "25", "Linha sul"], ["LF", "26", "Decantação"], ["LF", "27", "Pátio de placas em frente ao GSM"], ["LF", "28", "Cantina"], ["LF", "29", "Linha 20 viaduto leste até o Kish-Pitt"], ["LF", "30", "Linha do 3° desvio CTE#2 e U-21"], ["LF", "31", "Linha do Palácio de Vidro W-24"], ["LF", "32", "KM"], ["LF", "33", "Reta da fábrica de cal"], ["LF", "34", "Pontes cavaletes pátio R4 (W-24)"], ["LF", "35", "Linha 54 Pátio leste"], ["LF", "36", "Linhas 53 Pátio leste"], ["LF", "37", "AF#3 centro de vivência do central"], ["LF", "38", "Área de armazenamento do truques (oficina)"], ["LF", "39", "Centro de vivência oeste"], ["LF", "40", "Reta do AF#2"], ["LF", "41", "Linha 40"], ["LF", "42", "Estação de gusa"], ["LF", "43", "Centro de vivência leste"], ["LF", "44", "Pátio da D#3"], ["LF", "45", "D#3 até travessia da águas cruas"], ["LF", "46", "Linha da ilha"], ["LF", "47", "Linha da torre"], ["LF", "48", "Pátio de manobras oeste"], ["LF", "49", "PMS (pátio de vazios/carregados)"], ["LF", "50", "Reta do EE-01"], ["LF", "51", "Gasômetro"], ["LF", "52", "Rouparia"], ["LF", "53", "Transporte de coque"], ["LF", "54", "Pátio 1"], ["LF", "55", "Em frente a sala da maquininha"], ["LF", "56", "EE-07"], ["LF", "57", "EE-03"], ["LF", "58", "Rua I-28 linha 10"], ["LF", "59", "EE-11"], ["LF", "60", "EE-10"], ["LF", "61", "Traíra"], ["LF", "62", "Oficina de lança"], ["LF", "63", "PMP"], ["LF", "64", "Tupi"], ["LF", "65", "Linha da limpeza"], ["LF", "66", "Depósito de combustível"], ["LF", "67", "Borrifo"], ["LF", "68", "Desvio da fábrica de cimentos"], ["LF", "69", "Sobremetal"], ["LF", "70", "PIC"], ["LF", "71", "Forno de poço"], ["LF", "72", "1ª cobertura"], ["SE", "1", "Subestação Sul"], ["SE", "2", "Subestação Leste"], ["SE", "3", "Subestação Sudeste"], ["SE", "4", "Subestação Norte"], ["SE", "5", "Subestação Moto soprador e Trafo ao lado"], ["SE", "6", "Trafos 10BAT / 20BAT CTE – 2"], ["SE", "7", "Trafo CBGCO - Posto de Gás"], ["SE", "8", "Trafo CCL - ao lado da conversora de frequência"], ["SE", "9", "Trafo ECA – 2"], ["SE", "10", "Trafo ECA – 3"], ["SE", "11", "Trafo ETE/LTQ 2"]];
+function criarApiDemo(){
+  let user = null, admin = false; const regs = [], fotos = {};
+  const cadDemo = AREAS_DEMO.map(([tipo, numero, nome]) => ({ tipo, numero, nome }));
+  return {
+    demo: true,
+    async usuario(){ return user; },
+    async entrarDemo(eAdmin){ admin = eAdmin; user = { id: eAdmin ? 'demo-admin' : 'demo-colab', email: eAdmin ? 'admin@demonstracao' : 'colaborador@demonstracao' }; return user; },
+    async entrar(){ throw new Error('No modo demonstração, use os botões de perfil abaixo.'); },
+    async sair(){ user = null; },
+    async admin(){ return admin; },
+    async areas(){ return cadDemo.map(a => ({ ...a })); },
+    async salvarArea(tipo, numero, nome){ const i = cadDemo.findIndex(a => a.tipo === tipo && a.numero === numero); if (i > -1) cadDemo.splice(i, 1); if (nome) cadDemo.push({ tipo, numero, nome }); },
+    async listar(mes){ const [a, b] = intervalo(mes); return regs.filter(r => r.data >= a && r.data < b && (admin || r.autor === user.id)).sort((x, y) => (x.data + x.criado_em).localeCompare(y.data + y.criado_em)).map(r => ({ ...r })); },
+    async criar(dados, blob){ const path = user.id + '/' + uuid() + '.jpg'; fotos[path] = URL.createObjectURL(blob); const r = { ...dados, id: uuid(), autor: user.id, foto_path: path, conferido: false, criado_em: new Date().toISOString() }; regs.push(r); return { ...r }; },
+    async atualizar(id, patch){ const r = regs.find(x => x.id === id); Object.assign(r, patch); return { ...r }; },
+    async trocarFoto(reg, blob){ const path = user.id + '/' + uuid() + '.jpg'; fotos[path] = URL.createObjectURL(blob); return this.atualizar(reg.id, { foto_path: path }); },
+    async excluir(reg){ const i = regs.findIndex(x => x.id === reg.id); if (i > -1) regs.splice(i, 1); },
+    async urls(paths){ const o = {}; paths.forEach(p => { if (fotos[p]) o[p] = fotos[p]; }); return o; }
+  };
+}
+
+/* =====================================================================
+   Estado e telas
+   ===================================================================== */
+const configurado = /^https:\/\//.test(CFG.SUPABASE_URL || '') && (CFG.SUPABASE_ANON_KEY || '').length > 20 && typeof supabase !== 'undefined';
+let api = null, ehAdmin = false, areas = new Map(), fotoNova = null, regsConf = [], filtro = 'todos', filtroTipo = 'todos', editando = null, fotoEdit = null;
+let areaSel = null, filtroArea = 'todos';
+const semAcento = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+function listaAreas(){
+  return [...areas].map(([k, nome]) => { const [tipo, ...r] = k.split('-'); return { tipo, numero: r.join('-'), nome }; })
+    .sort((a, b) => (a.tipo === b.tipo ? 0 : a.tipo === 'LF' ? -1 : 1) || (Number(a.numero) - Number(b.numero)) || a.numero.localeCompare(b.numero));
+}
+async function carregarCadastro(){
+  try { const lista = await api.areas(); areas = new Map(lista.map(a => [(a.tipo || 'LF') + '-' + normNum(a.numero), a.nome])); } catch(e){ areas = new Map(); }
+}
+function mostrarAreaSel(){
+  const v = $('#n-area-val');
+  v.innerHTML = areaSel ? '<b>' + esc(areaSel.tipo + '-' + areaSel.numero) + '</b><span>' + esc(areaSel.nome) + '</span>' : '<span class="ph">Toque para escolher a área</span>';
+  $('#n-area').classList.remove('erro');
+}
+function desenharListaAreas(){
+  const q = semAcento($('#busca-area').value).replace(/[\s\-·]+/g, ' ').trim();
+  const itens = listaAreas().filter(a => filtroArea === 'todos' || a.tipo === filtroArea).filter(a => {
+    if (!q) return true;
+    const cod1 = semAcento(a.tipo + ' ' + a.numero), cod2 = semAcento(a.tipo + a.numero);
+    return cod1.startsWith(q) || cod2.startsWith(q.replace(/ /g, '')) || a.numero === q || semAcento(a.nome).includes(q);
+  });
+  if (!itens.length){ $('#lista-a').innerHTML = '<div class="nada">Nenhuma área encontrada.</div>'; return; }
+  let html = '', grupo = '';
+  itens.forEach(a => {
+    if (a.tipo !== grupo){ grupo = a.tipo; html += '<div class="grupo" role="presentation">' + (grupo === 'LF' ? 'Linhas férreas (LF)' : 'Subestações (SE)') + '</div>'; }
+    const sel = areaSel && areaSel.tipo === a.tipo && areaSel.numero === a.numero;
+    html += '<button type="button" class="opt-area" role="option" aria-selected="' + !!sel + '" data-act="escolher-area" data-tipo="' + esc(a.tipo) + '" data-num="' + esc(a.numero) + '"><b>' + esc(a.tipo + '-' + a.numero) + '</b><span>' + esc(a.nome) + '</span></button>';
+  });
+  $('#lista-a').innerHTML = html;
+}
+function opcoesEdicao(r){
+  const itens = listaAreas(), atual = (r.area_tipo || 'LF') + '|' + r.area_numero;
+  let html = '<optgroup label="Linhas férreas (LF)">' + itens.filter(a => a.tipo === 'LF').map(a => '<option value="LF|' + esc(a.numero) + '">LF-' + esc(a.numero) + ' · ' + esc(a.nome) + '</option>').join('') + '</optgroup>'
+    + '<optgroup label="Subestações (SE)">' + itens.filter(a => a.tipo === 'SE').map(a => '<option value="SE|' + esc(a.numero) + '">SE-' + esc(a.numero) + ' · ' + esc(a.nome) + '</option>').join('') + '</optgroup>';
+  if (!areas.has((r.area_tipo || 'LF') + '-' + r.area_numero)) html = '<option value="' + esc(atual) + '">' + esc(cod(r) + ' · ' + r.area_nome) + '</option>' + html;
+  $('#e-area').innerHTML = html; $('#e-area').value = atual;
+}
+$('#busca-area').addEventListener('input', desenharListaAreas);
+$('#n-status').addEventListener('change', () => $('#n-status').classList.remove('erro'));
+$('#n-serv').addEventListener('change', () => $('#n-serv').classList.remove('erro'));
+
+function tela(id){ ['#v-setup','#v-login','#v-app','#v-rel'].forEach(s => { $(s).hidden = s !== id; }); window.scrollTo(0, 0); }
+function aba(t){
+  $$('.aba').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === t)));
+  $('#t-conf').hidden = t !== 'conf'; $('#t-novo').hidden = t !== 'novo'; $('#t-areas').hidden = t !== 'areas';
+  if (t === 'conf') carregarConf(); else if (t === 'areas') desenharCadastro(); else carregarMeus();
+}
+
+async function iniciar(){
+  if (!configurado){ tela('#v-setup'); return; }
+  api = criarApiSupabase();
+  try { const u = await api.usuario(); if (u) return entrarApp(u); } catch(e){}
+  tela('#v-login');
+}
+
+async function entrarApp(u){
+  try { ehAdmin = await api.admin(); } catch(e){ ehAdmin = false; }
+  await carregarCadastro();
+  $('#topo-user').textContent = (u.email || '') + (ehAdmin ? ' · administrador' : '');
+  $('#demo-aviso').hidden = !api.demo;
+  $('#abas').hidden = !ehAdmin;
+  $('#meus').hidden = ehAdmin;
+  const nomeSalvo = (()=>{ try { return localStorage.getItem('rel-autor') || ''; } catch(e){ return ''; } })();
+  $('#n-autor').value = nomeSalvo;
+  $('#n-data').value = hoje();
+  $('#c-mes').value = mesDe();
+  tela('#v-app');
+  aba(ehAdmin ? 'conf' : 'novo');
+}
+
+/* ---------- login ---------- */
+$('#f-login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const email = $('#l-email').value.trim(), senha = $('#l-senha').value;
+  if (!email || !senha){ msg($('#login-msg'), 'err', 'Informe e-mail e senha.'); return; }
+  $('#l-btn').disabled = true; $('#l-btn').textContent = 'Entrando…';
+  try { const u = await api.entrar(email, senha); msg($('#login-msg'), 'err', ''); await entrarApp(u); }
+  catch(err){ msg($('#login-msg'), 'err', err.message); }
+  $('#l-btn').disabled = false; $('#l-btn').textContent = 'Entrar';
+});
+
+/* ---------- novo registro ---------- */
+function mostrarFoto(box, url, vertical){
+  box.classList.add('tem');
+  box.innerHTML = '<img alt="Prévia da foto como vai aparecer no relatório" src="' + esc(url) + '">';
+}
+$$('[data-foto]').forEach(inp => inp.addEventListener('change', async () => {
+  const f = inp.files && inp.files[0]; inp.value = ''; if (!f) return;
+  const dica = $('#foto-dica');
+  try {
+    dica.textContent = 'Preparando a foto…'; dica.className = 'dica';
+    fotoNova = await comprimir(f);
+    mostrarFoto($('#foto-box'), URL.createObjectURL(fotoNova.blob));
+    if (fotoNova.h > fotoNova.w){ dica.textContent = 'Esta foto está na vertical e vai sair bem cortada no relatório. Se possível, tire de novo com o celular deitado.'; dica.className = 'dica alerta'; }
+    else { dica.textContent = 'Foto pronta. O recorte acima é como ela vai sair no relatório.'; dica.className = 'dica'; }
+  } catch(err){ fotoNova = null; dica.textContent = err.message; dica.className = 'dica alerta'; }
+}));
+
+$('#f-novo').addEventListener('submit', async e => {
+  e.preventDefault();
+  const d = { data: $('#n-data').value, os: $('#n-os').value.trim(), area_tipo: areaSel ? areaSel.tipo : '', area_numero: areaSel ? areaSel.numero : '', area_nome: areaSel ? areaSel.nome : '', status_pct: Number($('#n-status').value) || null, servico: $('#n-serv').value || null, autor_nome: $('#n-autor').value.trim() };
+  const falta = [];
+  if (!fotoNova) falta.push('foto');
+  if (!d.data) falta.push('data');
+  if (!d.os) falta.push('número da OS');
+  if (!areaSel){ falta.push('área'); $('#n-area').classList.add('erro'); }
+  if (!d.servico){ falta.push('tipo de serviço'); $('#n-serv').classList.add('erro'); }
+  if (!d.status_pct){ falta.push('status da área'); $('#n-status').classList.add('erro'); }
+  if (!d.autor_nome) falta.push('seu nome');
+  if (falta.length){ msg($('#novo-msg'), 'err', 'Falta preencher: ' + falta.join(', ') + '.'); $('#novo-msg').scrollIntoView({behavior:'smooth', block:'center'}); return; }
+  if (!navigator.onLine){ msg($('#novo-msg'), 'err', 'Sem internet no momento. Os dados continuam no formulário: envie quando tiver sinal.'); return; }
+  const b = $('#n-btn'); b.disabled = true; b.textContent = 'Enviando…';
+  try {
+    await api.criar(d, fotoNova.blob);
+    try { localStorage.setItem('rel-autor', d.autor_nome); } catch(_){}
+    msg($('#novo-msg'), 'ok', '');
+    fotoNova = null;
+    $('#foto-box').className = 'foto-box';
+    $('#foto-box').innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Nenhuma foto ainda</span>';
+    $('#foto-dica').textContent = 'Segure o celular deitado. O recorte acima mostra como a foto vai sair no relatório.'; $('#foto-dica').className = 'dica';
+    $('#n-os').value = ''; areaSel = null; mostrarAreaSel(); $('#n-status').value = '';
+    toast('Registro enviado. Obrigado!');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!ehAdmin) carregarMeus();
+  } catch(err){ msg($('#novo-msg'), 'err', err.message + ' Os dados continuam no formulário.'); }
+  b.disabled = false; b.textContent = 'Enviar registro';
+});
+
+async function carregarMeus(){
+  if (ehAdmin) return;
+  const el = $('#meus-lista');
+  try {
+    const lista = (await api.listar(mesDe())).reverse();
+    if (!lista.length){ el.innerHTML = '<div class="vazio">Nenhum envio neste mês.</div>'; return; }
+    const urls = await api.urls(lista.map(r => r.foto_path));
+    el.innerHTML = lista.map(r => '<div class="item">' + (urls[r.foto_path] ? '<img alt="" src="' + esc(urls[r.foto_path]) + '">' : '<span class="ph"></span>')
+      + '<div class="tx"><b>' + esc(cod(r)) + ' · ' + esc(r.area_nome) + '</b><span>' + esc(fmtData(r.data)) + ' · OS ' + esc(r.os) + ' · ' + esc(pctTxt(r)) + (r.servico ? ' · ' + esc(r.servico) : '') + '</span></div>'
+      + (r.conferido ? '<span class="tag ok">Conferido</span>' : '<button class="btn ghost sm" data-act="meu-excluir" data-id="' + esc(r.id) + '">Excluir</button>') + '</div>').join('');
+    el._lista = lista;
+  } catch(err){ el.innerHTML = '<div class="vazio">' + esc(err.message) + '</div>'; }
+}
+
+/* ---------- conferência (admin) ---------- */
+async function carregarConf(){
+  const mes = $('#c-mes').value || mesDe();
+  $('#c-grade').innerHTML = '<div class="vazio" style="grid-column:1/-1">Carregando…</div>';
+  try { regsConf = await api.listar(mes); msg($('#c-msg'), 'ok', ''); }
+  catch(err){ regsConf = []; msg($('#c-msg'), 'err', err.message); }
+  await desenharConf();
+}
+async function desenharConf(){
+  const tot = regsConf.length, ok = regsConf.filter(r => r.conferido).length;
+  $('#c-resumo').innerHTML = '<div class="kpi"><b>' + tot + '</b><span>registros no mês</span></div><div class="kpi"><b>' + ok + '</b><span>conferidos</span></div><div class="kpi"><b>' + (tot - ok) + '</b><span>aguardando</span></div><div class="kpi"><b>' + (Math.ceil(ok / 2) + 3) + '</b><span>páginas no PDF (conferidos)</span></div>';
+  const lista = regsConf.filter(r => (filtro === 'todos' || (filtro === 'ok' ? r.conferido : !r.conferido)) && (filtroTipo === 'todos' || (r.area_tipo || 'LF') === filtroTipo));
+  if (!lista.length){ $('#c-grade').innerHTML = '<div class="vazio" style="grid-column:1/-1">' + (tot ? 'Nenhum registro neste filtro.' : 'Nenhum registro enviado em ' + esc(nomeMes($('#c-mes').value || mesDe())) + '.') + '</div>'; return; }
+  const urls = await api.urls(lista.map(r => r.foto_path));
+  $('#c-grade').innerHTML = lista.map(r => '<article class="reg' + (r.conferido ? ' conf' : '') + '">'
+    + '<div class="ft">' + (urls[r.foto_path] ? '<img alt="Foto de ' + esc(cod(r)) + '" src="' + esc(urls[r.foto_path]) + '">' : '') + '<span class="n">' + esc(cod(r)) + '</span></div>'
+    + '<div class="bd"><h3>' + esc(r.area_nome) + '</h3>'
+    + '<div class="meta"><div><span>DATA</span>' + esc(fmtData(r.data)) + '</div><div><span>OS</span>' + esc(r.os) + '</div><div><span>SERVIÇO</span>' + esc(r.servico || '-') + '</div><div><span>STATUS</span>' + pctHtml(r) + '</div><div><span>ENVIADO POR</span>' + esc(r.autor_nome || '-') + '</div><div><span>SITUAÇÃO</span>' + (r.conferido ? '<span class="tag ok">Conferido</span>' : '<span class="tag pend">Aguardando</span>') + '</div></div></div>'
+    + '<div class="ac"><button class="btn sec sm" data-act="editar" data-id="' + esc(r.id) + '">Editar</button>'
+    + '<button class="btn sm' + (r.conferido ? ' ghost' : '') + '" data-act="conferir" data-id="' + esc(r.id) + '">' + (r.conferido ? 'Desfazer' : 'Conferir') + '</button></div></article>').join('');
+}
+$('#c-mes').addEventListener('change', carregarConf);
+
+/* ---------- edição ---------- */
+async function abrirEdicao(id){
+  const r = regsConf.find(x => x.id === id); if (!r) return;
+  editando = r; fotoEdit = null;
+  $('#e-data').value = r.data; $('#e-os').value = r.os; opcoesEdicao(r); $('#e-status').value = r.status_pct ? String(r.status_pct) : ''; $('#e-serv').value = r.servico || ''; $('#e-conf').checked = !!r.conferido;
+  const u = await api.urls([r.foto_path]);
+  $('#e-foto').innerHTML = u[r.foto_path] ? '<img alt="Foto atual" src="' + esc(u[r.foto_path]) + '">' : '';
+  $('#e-excluir').textContent = 'Excluir registro'; $('#e-excluir').dataset.confirmar = '';
+  msg($('#e-msg'), 'err', '');
+  $('#dlg').showModal();
+}
+$('#e-arq').addEventListener('change', async () => {
+  const f = $('#e-arq').files[0]; $('#e-arq').value = ''; if (!f) return;
+  try { fotoEdit = await comprimir(f); $('#e-foto').innerHTML = '<img alt="Nova foto" src="' + esc(URL.createObjectURL(fotoEdit.blob)) + '">'; }
+  catch(err){ msg($('#e-msg'), 'err', err.message); }
+});
+
+/* ---------- relatório ---------- */
+async function montarRelatorio(){
+  const mes = $('#c-mes').value || mesDe();
+  const soConf = $('#r-conf').checked;
+  const tipoRel = $('#r-tipo').value;
+  const servRel = $('#r-serv').value;
+  const lista = regsConf.filter(r => (!soConf || r.conferido) && (tipoRel === 'todos' || (r.area_tipo || 'LF') === tipoRel) && (servRel === 'todos' || r.servico === servRel));
+  const st = $('#r-st'), btn = $('#r-pdf'); btn.disabled = true;
+  if (!lista.length){ $('#r-paginas').innerHTML = '<div class="vazio" style="max-width:600px">' + (soConf ? 'Nenhum registro conferido neste mês. Confira os registros ou desmarque "Só registros conferidos".' : 'Nenhum registro neste mês.') + '</div>'; st.textContent = ''; return; }
+  st.textContent = 'Carregando fotos…';
+  const urls = await api.urls(lista.map(r => r.foto_path));
+  const area = r => r ? '<section class="rs-area"><div class="rs-top"><div class="rs-badge"><small>' + esc(r.area_tipo || 'LF') + '</small><b>' + esc(r.area_numero) + '</b></div>'
+    + '<div class="rs-info"><div class="rs-nome"><h2>' + esc(r.area_nome) + '</h2>' + (r.servico ? '<span class="rs-serv">' + esc(r.servico) + '</span>' : '') + '</div><div class="rs-campos"><div><span>DATA</span><strong>' + esc(fmtData(r.data)) + '</strong></div><div><span>ORDEM DE SERVIÇO</span><strong>' + esc(r.os) + '</strong></div><div class="rs-pct"><span>STATUS</span><strong>' + esc(r.status_pct ? r.status_pct + '% concluído' : '-') + '</strong>' + (r.status_pct ? '<em><b style="width:' + Number(r.status_pct) + '%"></b></em>' : '') + '</div></div></div></div>'
+    + '<div class="rs-linha"></div>' + (urls[r.foto_path] ? '<img class="rs-foto" alt="Foto de ' + esc(cod(r)) + '" src="' + esc(urls[r.foto_path]) + '">' : '<div class="rs-foto"></div>') + '</section>' : '';
+  let html = '<div class="pg"><img class="cp-logo" src="assets/csn-logo.png" alt="CSN"><div class="cp-mes" id="capa-mes">' + esc($('#r-mes').value) + '</div>'
+    + '<h1 class="cp-tit">Relatório de Serviços</h1><div class="cp-sub">' + esc(TXT.servico) + '</div><div class="cp-barra"></div><div class="cp-linha"></div><img class="cp-foto" src="assets/fabrica.jpg" alt=""></div>';
+  html += '<div class="pg"><img class="pgimg" src="assets/pagina-2.jpg" alt="Introdução"></div>';
+  for (let i = 0, p = 2; i < lista.length; i += 2, p++){
+    html += '<div class="pg"><div class="rs-head"><span>RELATÓRIO TÉCNICO</span><i></i></div><h1 class="rs-tit">Registro de execução.</h1>'
+      + '<div class="rs-sub">' + esc(TXT.servico) + ' · ' + esc(nomeMes(mes).replace(/^./, c => c.toUpperCase())) + '</div>'
+      + '<div class="rs-areas">' + area(lista[i]) + area(lista[i + 1]) + '</div>'
+      + '<div class="rs-rod">' + esc(TXT.empresa) + '</div><div class="rs-num">' + p + '</div><div class="rs-bar"></div></div>';
+  }
+  html += '<div class="pg"><img class="pgimg" src="assets/pagina-3.jpg" alt="Nossos contatos"></div>';
+  $('#r-paginas').innerHTML = html;
+  const imgs = $$('#r-paginas img');
+  await Promise.all(imgs.map(im => im.complete ? Promise.resolve() : new Promise(r => { im.onload = im.onerror = r; })));
+  if (document.fonts && document.fonts.ready) await document.fonts.ready;
+  const falhas = imgs.filter(im => !im.naturalWidth).length;
+  st.textContent = Math.ceil(lista.length / 2) + 3 + ' páginas · ' + lista.length + ' registros' + (falhas ? ' · ' + falhas + ' foto(s) não carregaram' : '');
+  btn.disabled = false;
+}
+$('#r-conf').addEventListener('change', montarRelatorio);
+$('#r-tipo').addEventListener('change', montarRelatorio);
+$('#r-serv').addEventListener('change', montarRelatorio);
+$('#r-mes').addEventListener('input', () => { const c = $('#capa-mes'); if (c) c.textContent = $('#r-mes').value; });
+
+/* ---------- cadastro de áreas (admin) ---------- */
+function desenharCadastro(){
+  let comNome = 0, total = 0;
+  ['LF', 'SE'].forEach(tipo => {
+    const extras = [...areas.keys()].filter(k => k.startsWith(tipo + '-')).map(k => k.slice(3)).filter(n => !/^\d+$/.test(n) || Number(n) > QTD[tipo]);
+    const nums = [...Array.from({ length: QTD[tipo] }, (_, i) => String(i + 1)), ...extras];
+    $('#a-' + tipo).innerHTML = nums.map(n => { const nome = areas.get(tipo + '-' + n) || ''; total++; if (nome) comNome++;
+      return '<div class="cad-row' + (nome ? '' : ' sem-nome') + '"><span class="cod">' + tipo + '-' + esc(n) + '</span><input type="text" value="' + esc(nome) + '" data-cad-tipo="' + tipo + '" data-cad-num="' + esc(n) + '" aria-label="Nome de ' + tipo + '-' + esc(n) + '" placeholder="Sem nome"></div>'; }).join('');
+  });
+  $('#a-resumo').innerHTML = '<div class="kpi"><b>' + QTD.LF + '</b><span>linhas férreas (LF)</span></div><div class="kpi"><b>' + QTD.SE + '</b><span>subestações (SE)</span></div><div class="kpi"><b>' + comNome + ' de ' + total + '</b><span>com nome cadastrado</span></div>';
+}
+document.addEventListener('change', async e => {
+  const t = e.target; if (!t.dataset || !t.dataset.cadTipo) return;
+  const tipo = t.dataset.cadTipo, numero = t.dataset.cadNum, nome = t.value.trim();
+  if ((areas.get(tipo + '-' + numero) || '') === nome) return;
+  try {
+    await api.salvarArea(tipo, numero, nome);
+    if (nome) areas.set(tipo + '-' + numero, nome); else areas.delete(tipo + '-' + numero);
+    t.closest('.cad-row').classList.toggle('sem-nome', !nome);
+    toast(tipo + '-' + numero + (nome ? ' salva.' : ' ficou sem nome.'));
+    const [a, b] = [$('#a-resumo .kpi:last-child b'), [...areas.keys()].length];
+    if (a) a.textContent = b + ' de ' + (QTD.LF + QTD.SE);
+  } catch(err){ msg($('#a-msg'), 'err', err.message); }
+});
+
+/* ---------- ações ---------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act],[data-tab],[data-filtro],[data-tfiltro],[data-afiltro]'); if (!b) return;
+  if (b.dataset.tab){ aba(b.dataset.tab); return; }
+  if (b.dataset.afiltro){ filtroArea = b.dataset.afiltro; $$('[data-afiltro]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); desenharListaAreas(); return; }
+  if (b.dataset.tfiltro){ filtroTipo = b.dataset.tfiltro; $$('[data-tfiltro]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); desenharConf(); return; }
+  if (b.dataset.filtro){ filtro = b.dataset.filtro; $$('[data-filtro]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); desenharConf(); return; }
+  const a = b.dataset.act;
+  if (a === 'demo'){ api = criarApiDemo(); $('#demo-login').hidden = false; $('#f-login').hidden = true; $('#login-sub').textContent = 'Teste a ferramenta antes de conectar o banco de dados.'; tela('#v-login'); }
+  else if (a === 'demo-colab' || a === 'demo-admin'){ const u = await api.entrarDemo(a === 'demo-admin'); entrarApp(u); }
+  else if (a === 'abrir-areas'){
+    if (!areas.size){ toast('O cadastro de áreas está vazio. Avise o administrador.'); return; }
+    $('#busca-area').value = ''; desenharListaAreas(); $('#dlg-area').showModal();
+    const s = $('#lista-a [aria-selected="true"]'); if (s) s.scrollIntoView({ block: 'center' });
+  }
+  else if (a === 'fechar-areas'){ $('#dlg-area').close(); }
+  else if (a === 'escolher-area'){
+    const tipo = b.dataset.tipo, numero = b.dataset.num;
+    areaSel = { tipo, numero, nome: areas.get(tipo + '-' + numero) || '' };
+    mostrarAreaSel(); $('#dlg-area').close(); $('#n-area').focus();
+  }
+  else if (a === 'sair'){ await api.sair(); if (api.demo) { tela('#v-login'); } else { $('#l-senha').value = ''; tela('#v-login'); } }
+  else if (a === 'meu-excluir'){
+    if (b.dataset.confirmar !== '1'){ b.dataset.confirmar = '1'; b.textContent = 'Confirmar'; b.classList.add('perigo'); return; }
+    const r = ($('#meus-lista')._lista || []).find(x => x.id === b.dataset.id);
+    try { await api.excluir(r); toast('Registro excluído.'); } catch(err){ toast(err.message); }
+    carregarMeus();
+  }
+  else if (a === 'conferir'){
+    const r = regsConf.find(x => x.id === b.dataset.id); b.disabled = true;
+    try { Object.assign(r, await api.atualizar(r.id, { conferido: !r.conferido })); } catch(err){ msg($('#c-msg'), 'err', err.message); }
+    desenharConf();
+  }
+  else if (a === 'conf-todos'){
+    const pend = regsConf.filter(r => !r.conferido); if (!pend.length){ toast('Todos já estão conferidos.'); return; }
+    b.disabled = true;
+    try { for (const r of pend) Object.assign(r, await api.atualizar(r.id, { conferido: true })); toast(pend.length + ' registro(s) marcados como conferidos.'); }
+    catch(err){ msg($('#c-msg'), 'err', err.message); }
+    b.disabled = false; desenharConf();
+  }
+  else if (a === 'editar') abrirEdicao(b.dataset.id);
+  else if (a === 'dlg-fechar') $('#dlg').close();
+  else if (a === 'dlg-salvar'){
+    const r = editando; if (!r) return;
+    const [eTipo, eNum] = $('#e-area').value.split('|');
+    const eNome = areas.get(eTipo + '-' + eNum) || (eTipo === (r.area_tipo || 'LF') && eNum === r.area_numero ? r.area_nome : '');
+    const patch = { data: $('#e-data').value, os: $('#e-os').value.trim(), area_tipo: eTipo, area_numero: eNum, area_nome: eNome, status_pct: Number($('#e-status').value) || null, servico: $('#e-serv').value || null, conferido: $('#e-conf').checked };
+    if (!patch.data || !patch.os || !patch.area_numero || !patch.area_nome || !patch.status_pct || !patch.servico){ msg($('#e-msg'), 'err', 'Preencha data, OS, área, serviço e status.'); return; }
+    b.disabled = true; b.textContent = 'Salvando…';
+    try {
+      let novo = await api.atualizar(r.id, patch);
+      if (fotoEdit) novo = await api.trocarFoto(novo, fotoEdit.blob);
+      Object.assign(r, novo);
+      if (mesDe(r.data) !== ($('#c-mes').value || mesDe())) regsConf = regsConf.filter(x => x !== r);
+      $('#dlg').close(); toast('Registro atualizado.'); desenharConf();
+    } catch(err){ msg($('#e-msg'), 'err', err.message); }
+    b.disabled = false; b.textContent = 'Salvar alterações';
+  }
+  else if (a === 'dlg-excluir'){
+    if (b.dataset.confirmar !== '1'){ b.dataset.confirmar = '1'; b.textContent = 'Confirmar exclusão'; return; }
+    try { await api.excluir(editando); regsConf = regsConf.filter(x => x !== editando); $('#dlg').close(); toast('Registro excluído.'); desenharConf(); }
+    catch(err){ msg($('#e-msg'), 'err', err.message); }
+  }
+  else if (a === 'gerar'){
+    const mes = $('#c-mes').value || mesDe();
+    $('#r-mes').value = capaMes(mes);
+    $('#r-conf').checked = regsConf.some(r => r.conferido);
+    tela('#v-rel'); montarRelatorio();
+  }
+  else if (a === 'rel-voltar'){ tela('#v-app'); }
+  else if (a === 'rel-pdf'){
+    const mes = $('#c-mes').value || mesDe(), t = document.title;
+    document.title = 'Relatorio_' + TXT.cliente + '_' + TXT.servico.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, '_') + '_' + mes;
+    window.print();
+    setTimeout(() => { document.title = t; }, 1000);
+  }
+});
+
+iniciar();
+</script>
+</body>
+</html>
